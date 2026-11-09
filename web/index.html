@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Seat Pool — pooled seat buying on NEAR</title>
+<meta name="description" content="Buyers pool funds, sellers bid blindly, the contract mints seat passes at the median cap. Live on NEAR testnet.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎟️</text></svg>">
+<style>
+:root{
+  --ink:#17172b; --muted:#4b5563; --soft:#6b7280; --line:#ece9f4;
+  --bg:#ffffff; --wash:#f7f6fb; --violet:#7c3aed; --violet-ink:#5b21b6;
+  --green:#059669; --amber:#b45309;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:Geist,"Geist Fallback","Segoe UI",system-ui,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1060px;margin:0 auto;padding:0 22px}
+
+nav{position:sticky;top:0;z-index:10;background:rgba(247,246,251,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{font-weight:700;letter-spacing:.4px;font-size:15px}
+.logo b{color:var(--violet)}
+.links{display:flex;gap:22px;align-items:center;font-size:14px;color:var(--muted)}
+.links a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;height:40px;padding:0 20px;border-radius:10px;background:var(--violet);color:#fff!important;font-weight:600;font-size:14px;transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(124,58,237,.28)}
+.btn.ghost{background:#fff;color:var(--muted)!important;border:1px solid var(--line)}
+
+hero{padding:84px 0 64px;text-align:center}
+.tag{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--violet-ink);background:#f1eafd;border:1px solid #e3d7fb;border-radius:999px;padding:6px 14px;margin-bottom:22px}
+.tag .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(5,150,105,.18);animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.5}}
+h1{font-size:clamp(38px,6vw,60px);line-height:1.08;font-weight:700;letter-spacing:-1.2px}
+h1 em{font-style:normal;color:var(--violet)}
+.sub{max-width:640px;margin:18px auto 30px;color:var(--muted);font-size:17px}
+.cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+.band{background:var(--wash);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:56px 0}
+h2{font-size:clamp(26px,4vw,36px);font-weight:700;letter-spacing:-.6px;text-align:center}
+.lead{color:var(--muted);text-align:center;max-width:560px;margin:10px auto 36px;font-size:15.5px}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:0 1px 2px rgba(23,23,43,.04)}
+.card .num{width:34px;height:34px;border-radius:10px;background:#f1eafd;color:var(--violet-ink);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:14px}
+.card h3{font-size:16px;margin-bottom:6px}
+.card p{font-size:13.5px;color:var(--soft)}
+
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:28px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+.stat .k{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--soft)}
+.stat .v{font-size:26px;font-weight:700;letter-spacing:-.5px;margin-top:6px;font-variant-numeric:tabular-nums}
+.stat .v small{font-size:14px;color:var(--soft);font-weight:500}
+
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:20px}
+.panel .head{display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-bottom:1px solid var(--line)}
+.panel .head h3{font-size:15px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;color:var(--soft);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.4px;padding:10px 22px;background:var(--wash)}
+td{padding:11px 22px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.ok{color:var(--green);font-weight:600}
+.open{color:var(--amber);font-weight:600}
+.code{font-family:ui-monospace,SFMono-Regular,monospace;font-size:12.5px;color:var(--violet-ink)}
+.card p code, .lead code, .faq p code{font-family:ui-monospace,SFMono-Regular,monospace;font-size:12.5px;color:var(--violet-ink);background:var(--violet-soft,rgba(124,58,237,.08));padding:1px 5px;border-radius:5px}
+
+.faq{max-width:680px;margin:0 auto}
+.faq details{border-bottom:1px solid var(--line);padding:16px 4px}
+.faq summary{font-weight:600;font-size:15.5px;cursor:pointer;list-style:none;display:flex;justify-content:space-between}
+.faq summary::after{content:'+';color:var(--violet);font-weight:700}
+.faq details[open] summary::after{content:'–'}
+.faq p{color:var(--muted);font-size:14.5px;margin-top:10px}
+
+footer{padding:56px 0 40px;text-align:center}
+footer p{color:var(--soft);font-size:13px;margin-top:14px}
+.explorer{font-size:13px;color:var(--violet-ink)}
+.explorer a{text-decoration:underline}
+
+@media (max-width:640px){.links a:not(.btn){display:none}hero{padding:56px 0 40px}}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="logo" href="#">🎟️ SEAT<b>POOL</b></a>
+  <div class="links">
+    <a href="#how">How it works</a>
+    <a href="#roles">Roles</a>
+    <a href="#live">Live chain</a>
+    <a href="#faq">FAQ</a>
+    <a href="https://github.com/jinkatama105/seatpool" target="_blank">GitHub</a>
+    <a class="btn" href="#live">View the pool</a>
+  </div>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div class="tag"><span class="dot"></span> LIVE ON NEAR TESTNET · CONTRACT VERIFIED</div>
+  <h1>Don't buy a seat.<br><em>Pool for one.</em></h1>
+  <p class="sub">Buyers pool funds together, sellers bid blindly (commit–reveal), and the contract settles every seat pass at the <b>median cap</b> — no price gouging, no sniping, no queue.</p>
+  <div class="cta">
+    <a class="btn" href="#live">See the live pool →</a>
+    <a class="btn ghost" href="#how">How it works</a>
+  </div>
+</div></header>
+
+<section class="band" id="how"><div class="wrap">
+  <h2>A seat drop in six moves.</h2>
+  <p class="lead">Every round runs itself: funds sit in escrow, bids are hashed until the deadline, and finalize settles all at once.</p>
+  <div class="cards">
+    <div class="card"><div class="num">1</div><h3>Host opens a round</h3><p>A deadline and a bid bond are fixed on-chain. Nobody can move them later.</p></div>
+    <div class="card"><div class="num">2</div><h3>Seller declares inventory</h3><p>Exactly how many seats are for sale — recorded before any money arrives.</p></div>
+    <div class="card"><div class="num">3</div><h3>Buyers join the pool</h3><p>Each sends a flat contribution into escrow. Joined or refunded, never stuck.</p></div>
+    <div class="card"><div class="num">4</div><h3>Blind bids</h3><p>Sellers commit a hashed price + bond. The number stays secret until reveal.</p></div>
+    <div class="card"><div class="num">5</div><h3>Deadline → reveal</h3><p>After the deadline, bids unlock. Late or fake reveals lose the bond.</p></div>
+    <div class="card"><div class="num">6</div><h3>Finalize &amp; mint</h3><p>Median cap is computed, seat passes mint to buyers, escrow settles. Disputes refund everyone.</p></div>
+  </div>
+</div></section>
+
+<section id="roles" style="padding:64px 0"><div class="wrap">
+  <h2>Three seats at the table.</h2>
+  <p class="lead">Anyone with a NEAR account can take one. No signup, no backend — the role you play is just which function you call.</p>
+  <div class="cards">
+    <div class="card"><div class="num">H</div><h3>The host</h3><p>Deploy a pool (one transaction: create sub-account + attach the contract) and you own it. As <code>owner</code>, your signature alone can <code>open_round</code> — you set the deadline, the minimum pool, and the bid bond that keeps sellers honest. <code>finalize</code> is yours too.</p></div>
+    <div class="card"><div class="num">S</div><h3>The seller</h3><p>No permission needed. Call <code>declare_inventory</code> with how many seats you hold, then <code>bid</code> a hashed price during the round. Reveal after the deadline and get paid straight out of escrow.</p></div>
+    <div class="card"><div class="num">B</div><h3>The buyer — or its agent</h3><p>Any wallet, any bot: <code>join</code> a round with the deposit attached and it's escrowed instantly. If the round settles, a seat pass is minted to you. If it doesn't, every yocto comes back. An agent signs the same four calls an auctioneer-human would.</p></div>
+  </div>
+  <p class="lead" style="margin-top:26px">Round&nbsp;#11 below is exactly that story: a host opened it, declared one seat, an agent wallet joined with 0.55&nbsp;N, the seller blind-bid 0.30&nbsp;N, and finalize minted <strong>pass #3 to the agent</strong> — while the pool escrow stayed flat. Watch the same flow scripted end-to-end: <a href="https://github.com/jinkatama105/seatpool" target="_blank">demo.mjs in the repo</a>.</p>
+</div></section>
+
+<section id="live" style="padding:64px 0"><div class="wrap">
+  <h2>Read straight off the chain.</h2>
+  <p class="lead">No backend, no dummy data — this page calls the testnet contract live. Hit refresh if the free RPC is catching its breath.</p>
+  <div style="text-align:center;margin-bottom:26px"><button class="btn" id="refresh" style="border:0;cursor:pointer;font-family:inherit">↻ Refresh live data</button></div>
+
+  <div class="statgrid" id="bal"></div>
+  <div class="panel"><div class="head"><h3>Rounds</h3><span class="explorer">contract: <a id="poolLink" target="_blank"></a></span></div><div id="rounds"></div></div>
+  <div class="panel"><div class="head"><h3>Seat passes minted</h3></div><div id="passes"></div></div>
+</div></section>
+
+<section class="band" id="faq"><div class="wrap">
+  <h2>Straight answers.</h2>
+  <div class="faq" style="margin-top:24px">
+    <details><summary>How do I become a host?</summary><p>You deploy the pool contract into your own NEAR sub-account (~6 N covers account + code storage) and one transaction sets you as <code>owner</code>. From then on only your key can open and finalize rounds — the contract you're looking at was hosted exactly this way. The repo ships the deploy script and the wasm.</p></details>
+    <details><summary>How does an agent join a round?</summary><p>Four plain function calls on the pool account: <code>join</code> (attach your budget), wait, then the contract handles the rest. There's no registration, API key, or session — if the agent can sign a NEAR transaction, it can buy seats. Round #11 in the table below was run end-to-end by scripted agent wallets.</p></details>
+    <details open><summary>Why median cap instead of highest bid?</summary><p>Highest-bid pricing lets one colluding bid raise everyone's price. The median of blind bids can't be pushed around without a majority of sellers, so a lone greedy bidder can't gouge the pool.</p></details>
+    <details><summary>What stops a seller from peeking at bids?</summary><p>Bids are committed as hashes before the deadline. The plain price only exists at reveal — after every seller has already locked in. A no-show reveal forfeits their bond.</p></details>
+    <details><summary>What if the round goes wrong?</summary><p>Any dispute path finalizes as a full refund: every buyer's escrow goes back to their wallet, nothing mints. Money is never stranded in the contract.</p></details>
+    <details><summary>What is a seat pass?</summary><p>A non-transferable NFT minted to the buyer's wallet at finalize. It proves which pool round bought which seat — redeemable by the seller out-of-band, or on-chain in the next milestone.</p></details>
+    <details><summary>Is it mainnet?</summary><p>Not yet — this is NEAR testnet, deliberately: the demo moved real (test) N through escrow and minted real passes, so the numbers you see here are genuine contract state. Mainnet after audit.</p></details>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <a class="btn" href="https://github.com/jinkatama105/seatpool" target="_blank">Star on GitHub</a>
+  <p>Rust contract · commit–reveal auction · median-cap escrow settlement · NEAR Testnet</p>
+  <p class="explorer">Inspect it yourself: <a id="poolLink2" target="_blank">pool contract on NEAR explorer</a></p>
+</div></footer>
+
+<script>
+const ROOT='spmw9b03jw.testnet', POOL='pool2.'+ROOT;
+const RPCS=['https://near-testnet.drpc.org','https://rpc.testnet.near.org']; // dRPC: free, CORS, no ban-hammer
+async function rpc(method,params,tries=3){
+  for(let i=0;i<tries;i++){
+    const RPC=RPCS[i%RPCS.length]; // rotate providers: free RPC throttles call_function harder
+    try{
+      const r=await fetch(RPC,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});
+      const j=await r.json(); if(j.error) throw new Error(j.error.message||'rpc error'); return j.result;
+    }catch(e){ await new Promise(res=>setTimeout(res,1800*(i+1))); }
+  }
+  throw new Error('RPC rate-limited');
+}
+const link='https://testnet.nearblocks.io/my-near-wallet/accounts/'+POOL;
+poolLink.href=link; poolLink.textContent=POOL; poolLink2.href=link;
+const near=b=>(Number(BigInt(b))/1e24).toFixed(3)+' N';
+const call=(fn,args)=>rpc('query',{request_type:'call_function',finality:'optimistic',account_id:POOL,method_name:fn,args_base64:btoa(JSON.stringify(args))})
+  .then(r=>{const x=r.result; // dRPC: [byte,byte,...] | near.org: [{return_data: base64url}]
+    const s=typeof x[0]==='number'?String.fromCharCode(...x):atob(x[0].return_data.replace(/-/g,'+').replace(/_/g,'/')); return JSON.parse(s);});
+async function load(){
+  refresh.textContent='⏳ reading the chain…';
+  try{
+    const accts=[[POOL,'Pool escrow'],[ 'bob.'+ROOT,'Buyer bob'],[ 'sam.'+ROOT,'Seller sam'],[ROOT,'Host']];
+    let stats='';
+    for(const [a,label] of accts){
+      let v='—'; try{ v=near((await rpc('query',{request_type:'view_account',finality:'optimistic',account_id:a})).amount);}catch(e){}
+      stats+=`<div class="stat"><div class="k">${label}</div><div class="v">${v}<small></small></div><div class="code" style="margin-top:4px">${a}</div></div>`;
+    }
+    bal.innerHTML=stats;
+    let rows='',last=1,seen=0;
+    for(let i=12;i>=6;i--){ try{ const s=await call('round_summary',{round:i}); if(i>=last)last=i; seen++;
+      rows+=`<tr><td>#${i}</td><td>${s[0]}</td><td>${s[1]}</td><td>${s[2]}</td><td>${s[3]?'<span class="ok">finalized ✓</span>':'<span class="open">open</span>'}</td></tr>`;
+    }catch(e){} }
+    let med='—'; try{ med=near(await call('peek_median',{round:last})); }catch(e){}
+    rounds.innerHTML= rows? `<table><tr><th>round</th><th>bids</th><th>sold</th><th>pool N</th><th>status</th></tr>${rows.replace(/<\/tr>/g,`</tr>`)}</table><div style="padding:12px 22px;color:var(--soft);font-size:13px">median cap of latest round (round #${last}): <b style="color:var(--ink)">${med}</b></div>` : '<div style="padding:18px 22px;color:var(--soft)">rounds not visible yet — hit refresh</div>';
+    let pr='',found=0;
+    for(const id of [1,2,3,4]){ try{ const p=await call('get_pass',{seat_id:id}); found++;
+      pr+=`<tr><td>pass #${id}</td><td class="code">${p.owner}</td><td>${p.sku}</td><td>${p.round?'#'+p.round:'—'}</td><td><span class="ok">minted ✓</span></td></tr>`;
+    }catch(e){} }
+    passes.innerHTML= pr? `<table><tr><th>token</th><th>owner</th><th>sku</th><th>round</th><th>status</th></tr>${pr}</table>` : '<div style="padding:18px 22px;color:var(--soft)">no passes readable yet — hit refresh</div>';
+    refresh.textContent='↻ Refresh live data';
+  }catch(e){ refresh.textContent='↻ Retry (RPC busy)'; }
+}
+refresh.onclick=load; load();
+</script>
+</body>
+</html>
