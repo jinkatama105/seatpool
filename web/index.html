@@ -77,6 +77,29 @@ footer p{color:var(--soft);font-size:13px;margin-top:14px}
 .explorer a{text-decoration:underline}
 
 @media (max-width:640px){.links a:not(.btn){display:none}hero{padding:56px 0 40px}}
+
+/* replay */
+.rp{display:grid;grid-template-columns:230px 1fr;gap:18px;margin-top:22px}
+@media(max-width:760px){.rp{grid-template-columns:1fr}}
+.rplist{display:flex;flex-direction:column;gap:6px}
+.rpstep{border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:12.5px;color:var(--muted);background:#fff;text-align:left;cursor:default}
+.rpstep.done{border-color:#d6f0e3;background:#f2fbf6}
+.rpstep.cur{border-color:var(--violet);background:#f5f1ff;color:var(--ink);box-shadow:0 4px 14px rgba(124,58,237,.12)}
+.rpstep b{display:block;font-size:12px}
+.rp .who{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;margin-bottom:8px}
+.who.host{background:#f0e9ff;color:#5b21b6}.who.agent{background:#e5f6fd;color:#0b6fa8}.who.seller{background:#fef3e2;color:#b45309}
+.rpdetail{border:1px solid var(--line);border-radius:14px;background:#fff;padding:20px 22px;min-height:230px}
+.rpdetail code{display:block;background:var(--wash);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:12.5px;margin:8px 0;overflow-x:auto;white-space:pre-wrap}
+.rplog{font-size:12.5px;color:var(--green);font-weight:600}
+.rpbal{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:12.5px;color:var(--soft)}
+.rpbal b{color:var(--ink)}
+.rpbtns{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.agcard{margin-top:22px;border:none;border-radius:16px;background:#f8c5d6;overflow:hidden}
+.agtop{display:flex;align-items:center;gap:12px;padding:14px 18px}
+.agbadge{font-size:11px;font-weight:700;letter-spacing:.08em;color:#fff;background:#8b33e6;border-radius:99px;padding:4px 10px}
+.agpre{margin:0;padding:18px;font-size:13px;line-height:1.65;overflow-x:auto;white-space:pre-wrap;color:#fff;font-weight:600}
+.fineprint{font-size:13px;color:var(--soft);margin-top:14px}
+.hashlink{font-size:12px;color:var(--violet)}
 </style>
 </head>
 <body>
@@ -87,6 +110,7 @@ footer p{color:var(--soft);font-size:13px;margin-top:14px}
     <a href="#how">How it works</a>
     <a href="#roles">Roles</a>
     <a href="#live">Live chain</a>
+  <a href="#play">Replay</a>
     <a href="#faq">FAQ</a>
     <a href="https://github.com/jinkatama105/seatpool" target="_blank">GitHub</a>
     <a class="btn" href="#live">View the pool</a>
@@ -137,11 +161,56 @@ footer p{color:var(--soft);font-size:13px;margin-top:14px}
   <div class="panel"><div class="head"><h3>Seat passes minted</h3></div><div id="passes"></div></div>
 </div></section>
 
+
+<section id="play" style="padding:64px 0;background:var(--wash)"><div class="wrap">
+  <h2>Play the round yourself.</h2>
+  <p class="lead">Every card below is a real transaction from round #17 on this very contract — same hashes, same logs, same balances. Press a step and watch how the <b>host</b> opens the round and how an <b>agent</b> gets in. Wallet-connected signing is the next milestone; today you can drive the whole story here, step by step.</p>
+  <div class="rp">
+    <div class="rplist" id="rplist"></div>
+    <div>
+      <div class="rpdetail" id="rpdetail"></div>
+      <div class="rpbtns">
+        <button class="btn" id="rpnext" style="border:0;cursor:pointer;font-family:inherit">▶ Next step</button>
+        <button class="btn ghost" id="rpauto" style="cursor:pointer;font-family:inherit">⏩ Autoplay</button>
+        <button class="btn ghost" id="rpreset" style="cursor:pointer;font-family:inherit">↺ Reset</button>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<section id="agents" style="padding:64px 0;background:var(--bg)"><div class="wrap">
+  <h2>Bring your own agent.</h2>
+  <p class="lead">Seat Pool is an <b>open protocol</b> on-chain — anyone can be a buyer without our app. If you run your own AI agent (Claude Code, Hermes, a script), give it our <code>AGENT.md</code> skill file. It contains the contract address, RPC endpoints, exact call formats, and the gotchas — no API key, no signup. The agent signs transactions with <b>its own NEAR testnet key</b>, straight to <a href="https://testnet.explorer.near.org/account/pool2.spmw9b03jw.testnet" target="_blank">pool2.spmw9b03jw.testnet</a>.</p>
+  <div class="agcard">
+    <div class="agtop"><span class="agbadge">AGENT SKILL</span><code style="color:#5b21b6;background:#fff;border-radius:8px;padding:3px 10px;font-weight:600">AGENT.md</code><button class="btn" id="agcopy" style="cursor:pointer;font-family:inherit;margin-left:auto;background:#8b33e6">Copy skill for my agent</button></div>
+    <pre class="agpre" id="agtext"># SEAT POOL — AGENT SKILL
+Contract: pool2.spmw9b03jw.testnet (NEAR testnet)
+Read:     POST https://near-testnet.drpc.org  (call_function)
+Push tx:  https://rpc.testnet.near.org (broadcast_tx_commit)
+
+To join a live round as a buyer:
+  function call "join" {"round": &lt;id&gt;} + attached deposit = your budget (≥0.1 N)
+Find the joinable round: scan round_summary {"round":N} until error,
+keep the highest N whose round_deadline {"round":N} is still in the
+future vs the chain's block timestamp (nanoseconds).
+
+After finalize: cheapest seats allocated at the median cap, overpayment
+auto-refunded, seat pass NFT minted to you.
+
+Proven live: external wallet b1.seatpool1.testnet joined round 32
+with 0.3 N — tx VnjRlauWzwFoAaJgUllHMVVl0gdlUwsN73RC7vQBQAc=
+
+Full spec + gotchas (u128 strings, nonce floors, RPC lag):
+https://raw.githubusercontent.com/jinkatama105/seatpool/main/AGENT.md</pre>
+  </div>
+  <p class="fineprint">Your agent keeps its own keys — the protocol only accepts what the contract accepts. Same game the host plays, no privileges, no handshakes.</p>
+</div></section>
+
 <section class="band" id="faq"><div class="wrap">
   <h2>Straight answers.</h2>
   <div class="faq" style="margin-top:24px">
     <details><summary>How do I become a host?</summary><p>You deploy the pool contract into your own NEAR sub-account (~6 N covers account + code storage) and one transaction sets you as <code>owner</code>. From then on only your key can open and finalize rounds — the contract you're looking at was hosted exactly this way. The repo ships the deploy script and the wasm.</p></details>
-    <details><summary>How does an agent join a round?</summary><p>Four plain function calls on the pool account: <code>join</code> (attach your budget), wait, then the contract handles the rest. There's no registration, API key, or session — if the agent can sign a NEAR transaction, it can buy seats. Round #11 in the table below was run end-to-end by scripted agent wallets.</p></details>
+    <details><summary>How does an agent join a round?</summary><p>Four plain function calls on the pool account: <code>join</code> (attach your budget), wait, then the contract handles the rest. There's no registration, API key, or session — if the agent can sign a NEAR transaction, it can buy seats. Round #17 in the table below was run end-to-end by scripted agent wallets — step through it yourself in the Replay section.</p></details>
     <details open><summary>Why median cap instead of highest bid?</summary><p>Highest-bid pricing lets one colluding bid raise everyone's price. The median of blind bids can't be pushed around without a majority of sellers, so a lone greedy bidder can't gouge the pool.</p></details>
     <details><summary>What stops a seller from peeking at bids?</summary><p>Bids are committed as hashes before the deadline. The plain price only exists at reveal — after every seller has already locked in. A no-show reveal forfeits their bond.</p></details>
     <details><summary>What if the round goes wrong?</summary><p>Any dispute path finalizes as a full refund: every buyer's escrow goes back to their wallet, nothing mints. Money is never stranded in the contract.</p></details>
@@ -200,6 +269,38 @@ async function load(){
   }catch(e){ refresh.textContent='↻ Retry (RPC busy)'; }
 }
 refresh.onclick=load; load();
+</script>
+
+<script>
+const RP={"round":17,"steps":[{"role":"host","title":"Host opens round #17 — 90-second window, 0.1 N bid bond","method":"open_round","args":"{deadline_ns:1794304931344013000, min_pool:0, bid_bond:\"100000000000000000000000\"}","deposit":"no deposit","hash":"zGrk5Tshut0kzQxYmfFFHbXLMk4o88TahvKTe81y3LY=","logs":["ROUND_OPEN 17 deadline_ns=1794304931344013000"],"bal":{"bob":"0.899 N","host":"0.154 N","pool":"7.600 N"},"hash58":"Ekxi4sYHNFtRSqH8k4mQ3E3LqS6BBjKDwYmQh9h2ZABX"},{"role":"host","title":"Host (also the seller here) declares 1 seat of stock","method":"declare_inventory","args":"{seats:1}","deposit":"no deposit","hash":"rvsL2s3JNjwfKOVPOb1F3LvjLq44eLHxgVDXcj3OT8A=","logs":[],"bal":{"bob":"0.899 N","host":"0.123 N","pool":"7.600 N"},"hash58":"Cn3y2kVMy9B2ELFBDmr8mGQFBF1PR4A79RZaqLZivJpX"},{"role":"agent","title":"Autonomous agent wallet joins the pool — 0.5 N attached, escrowed","method":"join","args":"{round:17}","deposit":"0.5 N","hash":"PQKc1tpc5d3spPf8Vnsp08R1PVtlfDlzTF35a+Wqyb0=","logs":["JOINED r=17 n=1"],"bal":{"bob":"0.899 N","host":"0.154 N","pool":"7.600 N"},"hash58":"57ABTDch7koSYvRDS3LAa82t9xW4dPYH4FEpSa2HA7Ek"},{"role":"seller","title":"Seller locks a BLIND bid — the price hides behind sha256, bond attached","method":"bid","args":"{round:17, seats:1, price_per_seat:\"250000000000000000000000\", commit:sha256(…)}","deposit":"0.1 N","hash":"CLFz6UX+ydnVwnKBARElquIiX6awZTFM7HGIVibjsyE=","logs":["BID r=17 s=spmw9b03jw.testnet seats=1"],"bal":{"bob":"0.398 N","host":"0.154 N","pool":"8.100 N"},"hash58":"awChak8D18qshj6tfiApnURqPTQVsKizUnxkKMHtL5N"},{"role":"seller","title":"Window ends — the sealed price unlocks at reveal","method":"reveal","args":"{round:17, price_per_seat:\"250000000000000000000000\", salt:\"69851c549e30ef6c\"}","deposit":"no deposit","hash":"GHgJ2NTiywXs0qfi98snjxRRI5gWxUdZDvqREdyhrko=","logs":["REVEALED r=17 s=spmw9b03jw.testnet price=250000000000000000000000"],"bal":{"bob":"0.398 N","host":"0.054 N","pool":"8.200 N"},"hash58":"2eWwwxrpFaEXGhhEYdXoTQxuMPTZCtrYCYEpxP8uPAky"},{"role":"host","title":"Finalize: median cap set, seat pass minted to the agent, seller paid from escrow","method":"finalize","args":"{round:17}","deposit":"no deposit","hash":"XoLgHYlc0Stvux2QdMECQ8xGz2ms46LTGvI7KuZCAd0=","logs":["SEATPASS 4 bob.spmw9b03jw.testnet paid 250000000000000000000000","FINAL r=17 cap=500000000000000000000000 sold=1 remaining=0"],"bal":{"bob":"0.398 N","host":"0.023 N","pool":"8.200 N"},"hash58":"7Mw56Ai9uzAT3odcxvymdGWFXK6DqrGN5bjsFXB4GCzY"}]};
+(function(){
+  const list=document.getElementById('rplist'), det=document.getElementById('rpdetail');
+  const roleNames={host:'Host',agent:'Agent (buyer)',seller:'Seller'};
+  let cur=-1, timer=null;
+  function render(){
+    list.innerHTML=RP.steps.map((s,i)=>`<button class="rpstep ${i<cur?'done':i===cur?'cur':''}" data-i="${i}"><b>${i+1}. ${roleNames[s.role]||s.role}</b>${s.method}</button>`).join('');
+    if(cur<0){det.innerHTML='<div style="color:var(--soft);font-size:14px;padding:20px 0">Press <b>▶ Next step</b> to walk through round #'+RP.round+' — from the host opening it to the seat pass minting. No wallet needed to watch; each card shows the exact on-chain call.</div>';return;}
+    const s=RP.steps[cur];
+    det.innerHTML='<span class="who '+s.role+'">'+(roleNames[s.role]||s.role)+'</span>'
+      +'<h3 style="font-size:17px;margin:0 0 4px">'+s.title+'</h3>'
+      +'<div style="font-size:13px;color:var(--soft)">call <b style="color:var(--ink)">'+s.method+'</b> on the pool contract · attached: '+s.deposit+'</div>'
+      +'<code>'+s.args.replace(/</g,'&lt;')+'</code>'
+      +(s.logs&&s.logs.length?'<div class="rplog">⛓ '+s.logs.join(' · ')+'</div>':'')
+      +(s.bal&&Object.keys(s.bal).length?'<div class="rpbal"><span>agent wallet <b>'+s.bal.bob+'</b></span><span>host <b>'+s.bal.host+'</b></span><span>escrow pool <b>'+s.bal.pool+'</b></span></div>':'')
+      +(s.hash58?'<div style="margin-top:12px"><a class="hashlink" target="_blank" href="https://testnet.explorer.near.org/transactions/'+s.hash58+'">view tx '+s.hash58.slice(0,20)+'… on the explorer ↗</a></div>':'');
+  }
+  function next(){ if(cur<RP.steps.length-1){cur++;render();} else if(timer){clearInterval(timer);timer=null;} }
+  document.getElementById('rpnext').onclick=next;
+  document.getElementById('rpreset').onclick=()=>{cur=-1;render();};
+  document.getElementById('rpauto').onclick=function(){ if(timer){clearInterval(timer);timer=null;this.textContent='⏩ Autoplay';return;} if(cur>=RP.steps.length-1)cur=-1; timer=setInterval(next,2600); next(); this.textContent='⏸ Pause'; };
+  list.onclick=e=>{const b=e.target.closest('[data-i]');if(b){cur=+b.dataset.i;render();}};
+  render();
+})();
+document.getElementById('agcopy').onclick=async e=>{
+  try{ await navigator.clipboard.writeText(document.getElementById('agtext').innerText); e.target.textContent='✓ Copied — paste into your agent'; }
+  catch{ e.target.textContent='Select the box + Ctrl+C'; }
+  setTimeout(()=>e.target.textContent='Copy skill for my agent',3000);
+};
 </script>
 </body>
 </html>
