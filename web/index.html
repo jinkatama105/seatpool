@@ -44,6 +44,7 @@ h2{font-size:clamp(26px,4vw,36px);font-weight:700;letter-spacing:-.6px;text-alig
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
 .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:0 1px 2px rgba(23,23,43,.04)}
 .card .num{width:34px;height:34px;border-radius:10px;background:#f1eafd;color:var(--violet-ink);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:14px}
+#why .card{border:2px solid #93c5fd;box-shadow:0 0 0 4px #e0edff}
 .card h3{font-size:16px;margin-bottom:6px}
 .card p{font-size:13.5px;color:var(--soft)}
 
@@ -107,6 +108,7 @@ footer p{color:var(--soft);font-size:13px;margin-top:14px}
 <nav><div class="wrap">
   <a class="logo" href="#">🎟️ SEAT<b>POOL</b></a>
   <div class="links">
+    <a href="#why">Why</a>
     <a href="#how">How it works</a>
     <a href="#roles">Roles</a>
     <a href="#live">Live chain</a>
@@ -126,6 +128,16 @@ footer p{color:var(--soft);font-size:13px;margin-top:14px}
     <a class="btn ghost" href="#how">How it works</a>
   </div>
 </div></header>
+
+<section id="why" style="padding:64px 0"><div class="wrap">
+  <h2>Why we built this.</h2>
+  <p class="sub">Event tickets and community seats break the same way everywhere: scalpers snipe drops with bots, sellers jack the price the moment demand spikes, and buyers queue, overpay, or get rugged by "presale" links. The asset is scarce and the crowd is eager — every existing market rewards whoever screams loudest first.</p>
+  <div class="cards">
+    <div class="card"><div class="num">!</div><h3>The problem</h3><p>Real cases: a pop star's presale "sells out in 60 seconds" while resale listings hit 8× face value the same minute. A community server's paid role slots get grabbed by bot wallets minutes before humans could even fill the captcha. An NFT whitelist sells a "guaranteed mint" at 2 Ⓝ, then public mint opens at 0.5 Ⓝ an hour later. Open pricing lets whoever screams loudest first drag the price for everyone else — and buyers pay that scam premium before they ever see a seat.</p></div>
+    <div class="card"><div class="num">✓</div><h3>The fix</h3><p>Seat Pool flips pricing from "highest shout" to "pooled median": buyers escrow flat contributions, sellers bid blind (commit–reveal), and finalize settles every seat at the <b>median cap</b>. Overpayment auto-refunds, failed rounds refund everyone, seat passes mint as NFTs.</p></div>
+    <div class="card"><div class="num">N</div><h3>Why NEAR</h3><p>The guarantees above live in the contract, so the chain has to make them cheap and usable: sub-second finality keeps deadline→reveal→finalize one fluid motion, fees are fractions of a cent so a 0.1 Ⓝ join actually means 0.1 Ⓝ of seats, and account/namespace design lets any community deploy its own pool in one transaction. Human <i>and</i> agent wallets sign the exact same four calls — that's what makes "bring your own agent" real, not marketing.</p></div>
+  </div>
+</div></section>
 
 <section class="band" id="how"><div class="wrap">
   <h2>A seat drop in six moves.</h2>
