@@ -23,6 +23,7 @@ nav .wrap{display:flex;align-items:center;justify-content:space-between;height:6
 .logo{font-weight:700;letter-spacing:.4px;font-size:15px}
 .logo b{color:var(--violet)}
 .links{display:flex;gap:22px;align-items:center;font-size:14px;color:var(--muted)}
+.links a{font-weight:700;color:var(--ink)}
 .links a:hover{color:var(--ink)}
 .btn{display:inline-flex;align-items:center;height:40px;padding:0 20px;border-radius:10px;background:var(--violet);color:#fff!important;font-weight:600;font-size:14px;transition:transform .15s,box-shadow .15s}
 .btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(124,58,237,.28)}
@@ -45,6 +46,18 @@ h2{font-size:clamp(26px,4vw,36px);font-weight:700;letter-spacing:-.6px;text-alig
 .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:0 1px 2px rgba(23,23,43,.04)}
 .card .num{width:34px;height:34px;border-radius:10px;background:#f1eafd;color:var(--violet-ink);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:14px}
 #why .card{border-color:transparent;box-shadow:0 6px 18px rgba(23,17,43,.08)}
+.why-grid{display:grid;grid-template-columns:230px minmax(0,620px);gap:28px;margin-top:26px;align-items:start}
+.why-rail{display:flex;flex-direction:column;gap:4px}
+.why-rail-title{font-weight:700;font-size:15px;color:var(--ink);margin:0 0 8px;padding:0 12px}
+.why-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;border:0;border-radius:10px;background:transparent;font:inherit;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;transition:background .15s,color .15s}
+.why-item:hover{color:var(--ink)}
+.why-item.active{background:#f2f3f6;color:var(--ink)}
+.wi{width:26px;height:26px;border-radius:8px;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none}
+.why-panel{display:none;background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 24px;box-shadow:0 6px 18px rgba(23,17,43,.06)}
+.why-panel.active{display:block}
+.why-panel h3{margin:0 0 8px;font-size:17px}
+.why-panel p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.65;max-width:60ch}
+@media(max-width:760px){.why-grid{grid-template-columns:1fr}.why-rail{flex-direction:row}.why-rail-title{display:none}.why-item{width:auto}}
 .card h3{font-size:16px;margin-bottom:6px}
 .card p{font-size:13.5px;color:var(--soft)}
 
@@ -131,11 +144,18 @@ footer p{color:var(--soft);font-size:13px;margin-top:14px}
 
 <section id="why" style="padding:64px 0"><div class="wrap">
   <h2>Why we built this.</h2>
-  <p class="sub">Event tickets and community seats break the same way everywhere: scalpers snipe drops with bots, sellers jack the price the moment demand spikes, and buyers queue, overpay, or get rugged by "presale" links. The asset is scarce and the crowd is eager — every existing market rewards whoever screams loudest first.</p>
-  <div class="cards">
-    <div class="card"><div class="num">!</div><h3>The problem</h3><p>Real cases: a pop star's presale "sells out in 60 seconds" while resale listings hit 8× face value the same minute. A community server's paid role slots get grabbed by bot wallets minutes before humans could even fill the captcha. An NFT whitelist sells a "guaranteed mint" at 2 Ⓝ, then public mint opens at 0.5 Ⓝ an hour later. Open pricing lets whoever screams loudest first drag the price for everyone else — and buyers pay that scam premium before they ever see a seat.</p></div>
-    <div class="card"><div class="num">✓</div><h3>The fix</h3><p>Seat Pool flips pricing from "highest shout" to "pooled median": buyers escrow flat contributions, sellers bid blind (commit–reveal), and finalize settles every seat at the <b>median cap</b>. Overpayment auto-refunds, failed rounds refund everyone, seat passes mint as NFTs.</p></div>
-    <div class="card"><div class="num">N</div><h3>Why NEAR</h3><p>The guarantees above live in the contract, so the chain has to make them cheap and usable: sub-second finality keeps deadline→reveal→finalize one fluid motion, fees are fractions of a cent so a 0.1 Ⓝ join actually means 0.1 Ⓝ of seats, and account/namespace design lets any community deploy its own pool in one transaction. Human <i>and</i> agent wallets sign the exact same four calls — that's what makes "bring your own agent" real, not marketing.</p></div>
+  <div class="why-grid">
+    <aside class="why-rail" aria-label="Why sections">
+      <div class="why-rail-title">Why</div>
+      <button class="why-item active" data-w="0"><span class="wi">!</span>Problem</button>
+      <button class="why-item" data-w="1"><span class="wi">✓</span>The fix</button>
+      <button class="why-item" data-w="2"><span class="wi">N</span>Why NEAR</button>
+    </aside>
+    <div class="why-panels">
+      <div class="why-panel active"><h3>The problem</h3><p>Drops break the same way everywhere: presale "sells out in 60 seconds" while resale hits <b>8× face value</b> the same minute. Bot wallets grab paid role slots before a human finishes the captcha. Whitelist sells a "guaranteed mint" at 2 Ⓝ, public mint opens at 0.5 Ⓝ an hour later.</p></div>
+      <div class="why-panel"><h3>The fix</h3><p>Seat Pool flips pricing from "highest shout" to <b>pooled median</b>: buyers escrow flat contributions, sellers bid blind (commit–reveal), finalize settles every seat at the median cap. Overpayment auto-refunds, seat passes mint as NFTs.</p></div>
+      <div class="why-panel"><h3>Why NEAR</h3><p>The guarantees live in the contract, so the chain keeps them cheap: sub-second finality, fees in fractions of a cent, one transaction to deploy your own pool. Human and agent wallets sign the exact same four calls.</p></div>
+    </div>
   </div>
 </div></section>
 
@@ -237,6 +257,14 @@ https://raw.githubusercontent.com/jinkatama105/seatpool/main/AGENT.md</pre>
   <p class="explorer">Inspect it yourself: <a id="poolLink2" target="_blank">pool contract on NEAR explorer</a></p>
 </div></footer>
 
+<script>
+document.querySelectorAll('.why-item').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.why-item').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.why-panel').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  document.querySelectorAll('.why-panel')[+b.dataset.w].classList.add('active');
+}));
+</script>
 <script>
 const ROOT='spmw9b03jw.testnet', POOL='pool2.'+ROOT;
 const RPCS=['https://near-testnet.drpc.org','https://rpc.testnet.near.org']; // dRPC: free, CORS, no ban-hammer
